@@ -12,7 +12,7 @@ theme_set(theme_bw() +
 
 #### DMC overlap and quantify ---------------------------------------------------------------------------------------------
 
-age.data <- read.table("C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/data/LogAgeSites_smoothed200.bed",
+age.data <- read.table("~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/data/LogAgeSites_smoothed200.bed",
                        sep = "\t", header = FALSE) # Read in age-related DMCs derived from DSS model
 
 # Manually generate dataframe of sample metadata 
@@ -44,13 +44,13 @@ meth.t <- t(filt[,c(5:41)])
 all.cor <- corr.test(meth.t, log(annotations$ages), use = "pairwise", method = "pearson", adjust = "fdr", ci = FALSE)
 cor.df <- data.frame("r" = all.cor$r)
 
-# generate figure 1B from global cor coeffs
+# generate figure showing global cor coeffs
 
-b <- ggplot(cor.df, aes(x = r)) + geom_histogram(bins = 99, fill = "grey", color = "grey20") +
+b1 <- ggplot(cor.df, aes(x = r)) + geom_histogram(bins = 99, fill = "grey", color = "grey20") +
         ylab("Number of CpGs") + xlab("Age Correlation Coefficient")
-b
+b1
 
-ggsave(b, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/images/total80perc_logAgeCor.png",
+ggsave(b1, filename = "~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/images/total80perc_logAgeCor.svg", device = "svg",
        width = 5, height = 5)
 
 mean(cor.df$r, na.rm = TRUE); sd(cor.df$r, na.rm = TRUE) / sqrt(length(na.omit(cor.df$r))) ## Mean: 0.08528, +/- 0.00017 SE
@@ -64,13 +64,13 @@ meth_file <- as.data.frame(fread(file = "E:/anole/CpG/processed/labeled_allSites
 global <- data.frame(annotations,
                      "Avgs" = colMeans(filt[,-c(1:4)], na.rm = TRUE))
 
-a <- ggplot(data = global, aes(x = ages, y = Avgs, color = sex, group = ages)) + 
-    geom_boxplot(show.legend = FALSE) + geom_point(size = 2) + ylab("Global Average Methylation %") +
-    xlab("Age in Months") + theme(legend.title = element_text(size = 16, face = "bold",),
-                                  legend.text = element_text(size = 14))
+a <- ggplot(data = global, aes(x = ages, y = Avgs, color = sex)) + 
+  geom_point(size = 2) + ylab("Global Average Methylation %") + geom_smooth(aes(group = 1), method = "lm", color = "black") +
+  xlab("Age in Months") + theme(legend.title = element_text(size = 16, face = "bold",),
+                                legend.text = element_text(size = 14))
 a
 
-ggsave(a, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/images/GlobalCpGMeth.png",
+ggsave(a, filename = "~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/images/GlobalCpGMeth.svg", device = "svg",
        width = 5, height = 5)
 
 lm.glob <- lm(formula = Avgs ~ ages, data = global[-c(4,37),])
@@ -121,17 +121,37 @@ ggplot(data = annot_meth, aes(x = log(ages), y = V408, group = ages)) + geom_box
 cpg.ageCor <- corr.test(formatted_meth, log(annotations$ages), use = "pairwise", method = "spearman", adjust = "fdr", ci = FALSE)
 cpg.ageCor <- na.omit(data.frame("chr" = overlap.frame$seqnames, "loc" = overlap.frame$start, "r" = cpg.ageCor$r, "p.adj" = cpg.ageCor$p.adj))
 
-# Generate figure 1C from cor coeffs
+# Generate plot of aDMC cor coeffs
 
-c <- ggplot(data = cpg.ageCor, aes(x = r)) + geom_histogram(bins = 99, color = "black", fill = "grey") + 
+b2 <- ggplot(data = cpg.ageCor, aes(x = r)) + geom_histogram(bins = 99, color = "black", fill = "grey") + 
     ylab("Number of CpGs") + xlab("Age Correlation Coefficients")
-c
+b2
 
-ggsave(c, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/images/Signif_CpG_CorPlot.png",
+ggsave(b2, filename = "~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/images/Signif_CpG_CorPlot.svg", device = "svg",
        width = 5, height = 5)
 
 mean(cpg.ageCor$r, na.rm = TRUE); sd(cpg.ageCor$r, na.rm = TRUE) / sqrt(length(na.omit(cpg.ageCor$r))) ## Mean: -0.1961, +/- 0.0080 SE
 
+### Generate combined global and aDMC plot (Fig 2.B)
+
+# Righthand axis is scaled by a factor of 343 to match lefthand scale
+
+b <- ggplot(data = cor.df, aes(x = r)) + 
+      geom_histogram(fill = "grey40", color = "black", bins = 99) +
+      geom_histogram(data = cpg.ageCor, aes(x = r, y = 343*after_stat(count)), 
+                     fill = "firebrick", color = "black", alpha = 0.5, bins = 99) +
+      scale_y_continuous(name = "Number of Total CpGs", 
+                         sec.axis = sec_axis(transform=~./343, name = "Number of Age-Related CpGs")) +
+      theme(axis.title.y.left = element_text(color = "grey40"),
+            axis.title.y.right = element_text(color = "firebrick"),
+            axis.text.y.left = element_text(color = "grey40"), 
+            axis.text.y.right = element_text(color = "firebrick")) + 
+      xlab("Age Correlation Coefficients")
+
+b
+
+ggsave(b, filename = "~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/images/CpG_CorPlot.svg", device = "svg",
+       width = 6, height = 5)
 
 #### calculate and Plot DMCs per Mbp on each chromosome 
 
@@ -168,13 +188,13 @@ d <- ggplot(table.sorted, aes(x = siteDensity, y = chrName)) + geom_col(fill = "
     xlab("Age-Related Sites per Mbp") + ylab("")
 d
 
-ggsave(d, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/images/AgeSites_byMBp.png",
+ggsave(d, filename = "~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/images/AgeSites_byMBp.svg", device = "svg",
        width = 4, height = 5)
 
 
 ## Calculate total CpG density per chromosome
 
-CGsites <- fread("C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/CGsites.bed", header = F)
+CGsites <- fread("~/Parrott_Lab/Anole_Data/AnoSag2.1/CGsites.bed", header = F)
 table.cg <- as.data.frame(table(CGsites$V1))
 rm(CGsites)
 
@@ -223,7 +243,7 @@ s1 <- ggplot(data = tot, aes(x = N.Measured, y = N, label = V1)) + geom_smooth(m
           axis.title=element_text(size=16,face="bold"))
 s1
 
-ggsave(s1, filename = "C:/Users/sheal/Desktop/AnoleAge/Supp/AgeSites_byMBp.png",
+ggsave(s1, filename = "~/Parrott_Lab/AnoleAge/Supp/AgeSites_byMBp.svg", device = "svg",
        width = 6, height = 6)
 
 ## binomial test for enrichment on Chr3 (actual aDMCs versus prediction by regression on number of measured CpGs)
@@ -242,7 +262,7 @@ binom.test(x = actual.chr3, n = tot$N.Measured[3], p = ( predicted.chr3 / tot$N.
 ## First positively correlated sites 
 
 # Import CpG island gff file generated using EMBOSS's cpgplot
-islands <- import("C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/CGI.gff", format = "gff")
+islands <- import("~/Parrott_Lab/Anole_Data/AnoSag2.1/CGI.gff", format = "gff")
 
 # define shores, shelves, seas
 
@@ -295,7 +315,7 @@ cat("Proportion of CG sites that fall in seas: ", sum(sites.in.seas) / length(CG
 
 # Import aDMCs w/ correlation coeffs
 
-CPG <- import("C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/data/AgeSites_cor.bed", format = "bed")
+CPG <- import("~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/data/AgeSites_cor.bed", format = "bed")
 CPG <- CPG[which(CPG$name > 0),]
 
 totalCpG <- length(CPG)
@@ -321,7 +341,11 @@ cat("Proportion of (+) Age-Associated CpGs that fall in seas: ", sum(cpg.in.seas
 
 
 pos.density.results <- data.frame("Context" = c("islands", "shores", "shelves", "seas","islands", "shores", "shelves", "seas"), 
-                      "Values" = c(sum(sites.in.islands)/totalCG, sum(sites.in.shores)/totalCG,
+                      "Values" = c(sum(sites.in.islands), sum(sites.in.shores),
+                                   sum(sites.in.shelves), sum(sites.in.seas),
+                                   sum(cpg.in.islands), sum(cpg.in.shores), 
+                                   sum(cpg.in.shelves), sum(cpg.in.seas)),
+                      "Proportions" = c(sum(sites.in.islands)/totalCG, sum(sites.in.shores)/totalCG,
                                    sum(sites.in.shelves)/totalCG, sum(sites.in.seas)/totalCG,
                                    sum(cpg.in.islands)/totalCpG, sum(cpg.in.shores)/totalCpG, 
                                    sum(cpg.in.shelves)/totalCpG, sum(cpg.in.seas)/totalCpG),
@@ -329,7 +353,7 @@ pos.density.results <- data.frame("Context" = c("islands", "shores", "shelves", 
 
 pos.density.results$Context <- factor(pos.density.results$Context, levels=c("islands","shores","shelves", "seas"))
 
-enrichment.cgdensity <- ggplot(data = pos.density.results, mapping = aes(Context, Values)) + 
+enrichment.cgdensity <- ggplot(data = pos.density.results, mapping = aes(Context, Proportions)) + 
                                geom_bar(aes(fill = type), stat = "identity", position = "dodge", color = "black") + 
                                scale_fill_manual(values=c("#E69F00", "#56B4E9")) +
                                labs(title = "Enrichment of CpGs with (+) Age-Association") +
@@ -375,10 +399,10 @@ binom.test(x = sum(cpg.in.seas), n = totalCpG, p = ( sum(sites.in.seas)/totalCG 
 ## Generate genic contexts
 
 
-exons <- import.gff2("C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_exons.gtf")
+exons <- import.gff2("~/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_exons.gtf")
 exons.destranded <- reduce(exons, ignore.strand = TRUE)
 
-CDS <- import.gff2("C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/CDS.gtf")
+CDS <- import.gff2("~/Parrott_Lab/Anole_Data/AnoSag2.1/CDS.gtf")
 CDS.destranded <- reduce(CDS, ignore.strand = TRUE)
 full.CDS <- GenomicRanges::union(CDS.destranded, exons.destranded)
 
@@ -437,14 +461,20 @@ cat("Proportion of (+) Age-Associated CpGs that fall in intergenic space: ", sum
 # combine results
 
 pos.genic.results <- data.frame("Context" = c("promoters", "exons", "introns", "intergenic", "promoters", "exons", "introns", "intergenic"), 
-                      "Values" = c(sum(sites.in.promo)/totalCG, sum(sites.in.exons)/totalCG, sum(sites.in.introns)/totalCG, sum(sites.in.intergenic)/totalCG,
-                                   sum(cpg.in.promo)/totalCpG, sum(cpg.in.exons)/totalCpG, sum(cpg.in.introns)/totalCpG, sum(cpg.in.intergenic)/totalCpG),
+                      "Values" = c(sum(sites.in.promo), sum(sites.in.exons), 
+                                   sum(sites.in.introns), sum(sites.in.intergenic),
+                                   sum(cpg.in.promo), sum(cpg.in.exons), 
+                                   sum(cpg.in.introns), sum(cpg.in.intergenic)),
+                      "Proportions" = c(sum(sites.in.promo)/totalCG, sum(sites.in.exons)/totalCG, 
+                                        sum(sites.in.introns)/totalCG, sum(sites.in.intergenic)/totalCG,
+                                        sum(cpg.in.promo)/totalCpG, sum(cpg.in.exons)/totalCpG, 
+                                        sum(cpg.in.introns)/totalCpG, sum(cpg.in.intergenic)/totalCpG),
                       "type" = c(rep("Background", 4), rep("Age-Associated", 4)))
 
 pos.genic.results$Context <- factor(pos.genic.results$Context, levels=c("promoters", "exons", "introns", "intergenic"))
 
 
-enrichment.cgdensity <- ggplot(data = pos.genic.results, mapping = aes(Context, Values)) + 
+enrichment.cgdensity <- ggplot(data = pos.genic.results, mapping = aes(Context, Proportions)) + 
                                geom_bar(aes(fill = type), stat = "identity", position = "dodge", color = "black") + 
                                scale_fill_manual(values=c("#E69F00", "#56B4E9")) +
                                labs(title = "Enrichment of CpGs with (+) Age-Association") +
@@ -485,7 +515,7 @@ binom.test(x = sum(cpg.in.intergenic), n = totalCpG, p = ( sum(sites.in.intergen
 ## Now negatively correlated sites
 
 
-CPG <- import("C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/data/AgeSites_cor.bed", format = "bed")
+CPG <- import("~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/data/AgeSites_cor.bed", format = "bed")
 CPG <- CPG[which(CPG$name < 0),]
 totalCpG <- length(CPG)
 
@@ -510,16 +540,20 @@ cat("Proportion of (-) Age-Associated CpGs that fall in seas: ", sum(cpg.in.seas
 
 
 neg.density.results <- data.frame("Context" = c("islands", "shores", "shelves", "seas","islands", "shores", "shelves", "seas"), 
-                      "Values" = c(sum(sites.in.islands)/totalCG, sum(sites.in.shores)/totalCG,
-                                   sum(sites.in.shelves)/totalCG, sum(sites.in.seas)/totalCG,
-                                   sum(cpg.in.islands)/totalCpG, sum(cpg.in.shores)/totalCpG, 
-                                   sum(cpg.in.shelves)/totalCpG, sum(cpg.in.seas)/totalCpG),
+                      "Values" = c(sum(sites.in.islands), sum(sites.in.shores),
+                                   sum(sites.in.shelves), sum(sites.in.seas),
+                                   sum(cpg.in.islands), sum(cpg.in.shores), 
+                                   sum(cpg.in.shelves), sum(cpg.in.seas)),
+                      "Proportions" = c(sum(sites.in.islands)/totalCG, sum(sites.in.shores)/totalCG,
+                                       sum(sites.in.shelves)/totalCG, sum(sites.in.seas)/totalCG,
+                                       sum(cpg.in.islands)/totalCpG, sum(cpg.in.shores)/totalCpG, 
+                                       sum(cpg.in.shelves)/totalCpG, sum(cpg.in.seas)/totalCpG),
                       "type" = c(rep("Background", 4), rep("Age-Associated", 4)))
 
 neg.density.results$Context <- factor(neg.density.results$Context, levels=c("islands","shores","shelves", "seas"))
 
 
-enrichment.cgdensity <- ggplot(data = neg.density.results, mapping = aes(Context, Values)) + 
+enrichment.cgdensity <- ggplot(data = neg.density.results, mapping = aes(Context, Proportions)) + 
                                geom_bar(aes(fill = type), stat = "identity", position = "dodge", color = "black") + 
                                scale_fill_manual(values=c("#E69F00", "#56B4E9")) +
                                labs(title = "Enrichment of CpGs with (-) Age-Association") +
@@ -581,14 +615,20 @@ cat("Proportion of (-) Age-Associated CpGs that fall in intergenic space: ", sum
 
 
 neg.genic.results <- data.frame("Context" = c("promoters", "exons", "introns", "intergenic", "promoters", "exons", "introns", "intergenic"), 
-                      "Values" = c(sum(sites.in.promo)/totalCG, sum(sites.in.exons)/totalCG, sum(sites.in.introns)/totalCG, sum(sites.in.intergenic)/totalCG,
-                                   sum(cpg.in.promo)/totalCpG, sum(cpg.in.exons)/totalCpG, sum(cpg.in.introns)/totalCpG, sum(cpg.in.intergenic)/totalCpG),
+                      "Values" = c(sum(sites.in.promo), sum(sites.in.exons), 
+                                   sum(sites.in.introns), sum(sites.in.intergenic),
+                                   sum(cpg.in.promo), sum(cpg.in.exons), 
+                                   sum(cpg.in.introns), sum(cpg.in.intergenic)),
+                      "Proportions" = c(sum(sites.in.promo)/totalCG, sum(sites.in.exons)/totalCG, 
+                                        sum(sites.in.introns)/totalCG, sum(sites.in.intergenic)/totalCG,
+                                        sum(cpg.in.promo)/totalCpG, sum(cpg.in.exons)/totalCpG, 
+                                        sum(cpg.in.introns)/totalCpG, sum(cpg.in.intergenic)/totalCpG),
                       "type" = c(rep("Background", 4), rep("Age-Associated", 4)))
 
 neg.genic.results$Context <- factor(neg.genic.results$Context, levels=c("promoters", "exons", "introns", "intergenic"))
 
 
-enrichment.genic <- ggplot(data = neg.genic.results, mapping = aes(Context, Values)) + 
+enrichment.genic <- ggplot(data = neg.genic.results, mapping = aes(Context, Proportions)) + 
                                geom_bar(aes(fill = type), stat = "identity", position = "dodge", color = "black") + 
                                scale_fill_manual(values=c("#E69F00", "#56B4E9")) +
                                labs(title = "Enrichment of CpGs with (-) Age-Association") +
@@ -638,8 +678,8 @@ total.density$sign <- factor(total.density$sign, levels = c("- Age-Associated", 
 
 # Plot and save fig 1F
 
-f <- ggplot(data = total.density, aes(x = Context, y = Values)) + 
-    geom_bar(aes(fill = sign), stat = "identity", position = "dodge",   color = "black") + 
+f <- ggplot(data = total.density, aes(x = Context, y = Proportions)) + 
+    geom_bar(aes(fill = sign), stat = "identity", position = "dodge", color = "black") + 
     scale_fill_manual(values=c("navy", "forestgreen", "firebrick")) +
   ylab("Percentage of Total CpGs") +
   xlab("") +
@@ -648,8 +688,12 @@ f <- ggplot(data = total.density, aes(x = Context, y = Values)) +
           axis.title=element_text(size=12,face="bold"))
 f
 
-ggsave(f, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/images/density_combo.png",
+total.density[,c(1,2,5)]
+
+ggsave(f, filename = "~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/images/density_combo.svg", device = "svg",
        width = 3, height = 3)
+
+## Get counts to manually add to plot
 
 pos.genic.results$sign <- paste0("+ ", pos.genic.results$type)
 neg.genic.results$sign <- paste0("- ", pos.genic.results$type)
@@ -660,7 +704,7 @@ total.genic$sign <- factor(total.genic$sign, levels = c("- Age-Associated", "Bac
 
 # plot and save fig 1G
 
-g <- ggplot(data = total.genic, aes(x = Context, y = Values)) + 
+g <- ggplot(data = total.genic, aes(x = Context, y = Proportions)) + 
     geom_bar(aes(fill = sign), stat = "identity", position = "dodge",   color = "black") + 
     scale_fill_manual(values=c("navy", "forestgreen", "firebrick")) +
   ylab("Percentage of Total CpGs") +
@@ -671,13 +715,13 @@ g <- ggplot(data = total.genic, aes(x = Context, y = Values)) +
     
 g
 
-ggsave(g, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/images/genic_combo.png",
+ggsave(g, filename = "~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/images/genic_combo.svg", device = "svg",
        width = 3, height = 3)
 
-
+total.genic[,c(1,2,5)]
 
 #### Repeat entire process with WGCNA blue module sites
-
+library(GenomicRanges)
 
 grToBed <- function(gr, filename){
     df <- as.data.frame(gr)
@@ -686,18 +730,18 @@ grToBed <- function(gr, filename){
 }
 
 
-islands <- import("C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/CGI.gff", format = "gff")
+islands <- import("~/Parrott_Lab/Anole_Data/AnoSag2.1/CGI.gff", format = "gff")
 
 shores.up <- trim(flank(islands, 2000))
 shores.down <- trim(flank(islands, 2000, start = FALSE))
 shores <- c(shores.up, shores.down)
-shores.clean <- reduce(setdiff(shores, islands))
+shores.clean <- reduce(GenomicRanges::setdiff(shores, islands))
 
 shelves.up <- trim(flank(shores.up, 2000))
 shelves.down <- trim(flank(shores.down, 2000, start = FALSE))
 shelves <- c(shelves.up, shelves.down)
-shelves.no.islands <- setdiff(shelves, islands)
-shelves.clean <- reduce(setdiff(shelves.no.islands, shores))
+shelves.no.islands <- GenomicRanges::setdiff(shelves, islands)
+shelves.clean <- reduce(GenomicRanges::setdiff(shelves.no.islands, shores))
 
 
 not.seas <- c(islands,shores,shelves)
@@ -707,7 +751,7 @@ seas <- gaps(not.seas)
 
 ## Find background likelihood that CpGs are found in each context
 
-CGsites <- fread("C:/Users/sheal/Desktop/AnoleAge/VariableSites.meth", sep = "\t", header = TRUE)
+CGsites <- fread("~/Parrott_Lab/AnoleAge/VariableSites.meth", sep = "\t", header = TRUE)
 library(stringr)
 
 
@@ -742,7 +786,7 @@ sum(sites.in.seas) # 33346
 cat("Proportion of CG sites that fall in seas: ", sum(sites.in.seas) / length(CGsites.clean), "\n")
 
 
-CPG <- import("C:/Users/sheal/Desktop/AnoleAge/Fig2-WGCNA/data/blue.bedGraph", format = "bed")
+CPG <- import("~/Parrott_Lab/AnoleAge/WGCNA/data/blue.bedGraph", format = "bed")
 CPG <- CPG[which(CPG$name > 0),]
 
 totalCpG <- length(CPG)
@@ -750,33 +794,37 @@ totalCpG <- length(CPG)
 cpg.in.islands <- countOverlaps(CPG, islands, type = "within")
 sum(cpg.in.islands) # 14
 cat("Proportion of (+) Age-Associated CpGs that fall in islands: ", sum(cpg.in.islands) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, islands, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_islands.bed")
+#grToBed(subsetByOverlaps(CPG, islands, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_islands.bed")
 
 
 cpg.in.shores <- countOverlaps(CPG, shores.clean, type = "within")
 sum(cpg.in.shores) # 120
 cat("Proportion of (+) Age-Associated CpGs that fall in shores: ", sum(cpg.in.shores) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, shores.clean, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_shores.bed")
+#grToBed(subsetByOverlaps(CPG, shores.clean, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_shores.bed")
 
 
 cpg.in.shelves <- countOverlaps(CPG, shelves.clean, type = "within")
 sum(cpg.in.shelves) # 78
 cat("Proportion of (+) Age-Associated CpGs that fall in shelves: ", sum(cpg.in.shelves) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, shelves.clean, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_shelves.bed")
+#grToBed(subsetByOverlaps(CPG, shelves.clean, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_shelves.bed")
 
 
 cpg.in.seas <- countOverlaps(CPG, seas, type = "within")
 sum(cpg.in.seas) # 744
 cat("Proportion of (+) Age-Associated CpGs that fall in seas: ", sum(cpg.in.seas) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, seas, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_seas.bed")
+#grToBed(subsetByOverlaps(CPG, seas, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_seas.bed")
 
 
 pos.density.results <- data.frame("Context" = c("islands", "shores", "shelves", "seas","islands", "shores", "shelves", "seas"), 
-                      "Values" = c(sum(sites.in.islands)/totalCG, sum(sites.in.shores)/totalCG,
-                                   sum(sites.in.shelves)/totalCG, sum(sites.in.seas)/totalCG,
-                                   sum(cpg.in.islands)/totalCpG, sum(cpg.in.shores)/totalCpG, 
-                                   sum(cpg.in.shelves)/totalCpG, sum(cpg.in.seas)/totalCpG),
-                      "type" = c(rep("Background", 4), rep("Age-Associated", 4)))
+                                  "Values" = c(sum(sites.in.islands), sum(sites.in.shores),
+                                               sum(sites.in.shelves), sum(sites.in.seas),
+                                               sum(cpg.in.islands), sum(cpg.in.shores), 
+                                               sum(cpg.in.shelves), sum(cpg.in.seas)),
+                                  "Proportions" = c(sum(sites.in.islands)/totalCG, sum(sites.in.shores)/totalCG,
+                                                    sum(sites.in.shelves)/totalCG, sum(sites.in.seas)/totalCG,
+                                                    sum(cpg.in.islands)/totalCpG, sum(cpg.in.shores)/totalCpG, 
+                                                    sum(cpg.in.shelves)/totalCpG, sum(cpg.in.seas)/totalCpG),
+                                  "type" = c(rep("Background", 4), rep("Age-Associated", 4)))
 
 pos.density.results$Context <- factor(pos.density.results$Context, levels=c("islands","shores","shelves", "seas"))
 
@@ -805,25 +853,25 @@ binom.test(x = sum(cpg.in.seas), n = totalCpG, p = ( sum(sites.in.seas)/totalCG 
 
 #### Generate genic contexts ----------------------------------------------------------------------------------------------
 
-exons <- import.gff2("C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_exons.gtf")
+exons <- import.gff2("~/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_exons.gtf")
 exons.destranded <- reduce(exons, ignore.strand = TRUE)
-#export(exons.destranded, con = "C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_exons_destranded.gtf", format = "gff2")
+#export(exons.destranded, con = "~/Parrott_Lab/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_exons_destranded.gtf", format = "gff2")
 
 
-CDS <- import.gff2("C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/CDS.gtf")
+CDS <- import.gff2("~/Parrott_Lab/Anole_Data/AnoSag2.1/CDS.gtf")
 CDS.destranded <- reduce(CDS, ignore.strand = TRUE)
-full.CDS <- union(CDS.destranded, exons.destranded)
-#export(full.CDS, con = "C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_CDS_destranded.gtf", format = "gff2")
+full.CDS <- GenomicRanges::union(CDS.destranded, exons.destranded)
+#export(full.CDS, con = "~/Parrott_Lab/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_CDS_destranded.gtf", format = "gff2")
 
 
 intergenic <- gaps(CDS.destranded)
-intergenic.clean <- setdiff(intergenic, exons.destranded)
-#export(intergenic.clean, con = "C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_intergenic.gtf", format = "gff2")
+intergenic.clean <- GenomicRanges::setdiff(intergenic, exons.destranded)
+#export(intergenic.clean, con = "~/Parrott_Lab/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_intergenic.gtf", format = "gff2")
 
 exons.comp <- gaps(exons)
 
-introns <- setdiff(CDS.destranded, exons.destranded)
-#export(introns, con = "C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_introns.gtf", format = "gff2")
+introns <- GenomicRanges::setdiff(CDS.destranded, exons.destranded)
+#export(introns, con = "~/Parrott_Lab/Parrott_Lab/Anole_Data/AnoSag2.1/AnoSag2.1_introns.gtf", format = "gff2")
 
 promoter <- reduce(promoters(CDS), ignore.strand = TRUE)
 
@@ -861,25 +909,31 @@ cat("Proportion of (+) Age-Associated CpGs that fall in promoters: ", sum(cpg.in
 cpg.in.exons <- countOverlaps(CPG, exons.destranded, type = "within")
 sum(cpg.in.exons) # 61
 cat("Proportion of (+) Age-Associated CpGs that fall in exons: ", sum(cpg.in.exons) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, exons.destranded, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_exons.bed")
+#grToBed(subsetByOverlaps(CPG, exons.destranded, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_exons.bed")
 
 
 cpg.in.introns <- countOverlaps(CPG, introns, type = "within")
 sum(cpg.in.introns) # 384
 cat("Proportion of (+) Age-Associated CpGs that fall in introns: ", sum(cpg.in.introns) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, introns, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_introns.bed")
+#grToBed(subsetByOverlaps(CPG, introns, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_introns.bed")
 
 
 cpg.in.intergenic <- countOverlaps(CPG, intergenic.clean, type = "within")
 sum(cpg.in.intergenic) # 510
 cat("Proportion of (+) Age-Associated CpGs that fall in intergenic space: ", sum(cpg.in.intergenic) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, intergenic.clean, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_intergenic.bed")
+#grToBed(subsetByOverlaps(CPG, intergenic.clean, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/POSAgeAssoc_cpg_intergenic.bed")
 
 
 pos.genic.results <- data.frame("Context" = c("promoters", "exons", "introns", "intergenic", "promoters", "exons", "introns", "intergenic"), 
-                      "Values" = c(sum(sites.in.promo)/totalCG, sum(sites.in.exons)/totalCG, sum(sites.in.introns)/totalCG, sum(sites.in.intergenic)/totalCG,
-                                   sum(cpg.in.promo)/totalCpG, sum(cpg.in.exons)/totalCpG, sum(cpg.in.introns)/totalCpG, sum(cpg.in.intergenic)/totalCpG),
-                      "type" = c(rep("Background", 4), rep("Age-Associated", 4)))
+                                "Values" = c(sum(sites.in.promo), sum(sites.in.exons), 
+                                             sum(sites.in.introns), sum(sites.in.intergenic),
+                                             sum(cpg.in.promo), sum(cpg.in.exons), 
+                                             sum(cpg.in.introns), sum(cpg.in.intergenic)),
+                                "Proportions" = c(sum(sites.in.promo)/totalCG, sum(sites.in.exons)/totalCG, 
+                                                  sum(sites.in.introns)/totalCG, sum(sites.in.intergenic)/totalCG,
+                                                  sum(cpg.in.promo)/totalCpG, sum(cpg.in.exons)/totalCpG, 
+                                                  sum(cpg.in.introns)/totalCpG, sum(cpg.in.intergenic)/totalCpG),
+                                "type" = c(rep("Background", 4), rep("Age-Associated", 4)))
 
 pos.genic.results$Context <- factor(pos.genic.results$Context, levels=c("promoters", "exons", "introns", "intergenic"))
 
@@ -908,40 +962,44 @@ binom.test(x = sum(cpg.in.intergenic), n = totalCpG, p = ( sum(sites.in.intergen
 ## Negative
 
 
-CPG <- import("C:/Users/sheal/Desktop/AnoleAge/Fig2-WGCNA/data/blue.bedGraph", format = "bed")
+CPG <- import("~/Parrott_Lab/AnoleAge/WGCNA/data/blue.bedGraph", format = "bed")
 CPG <- CPG[which(CPG$name < 0),]
 totalCpG <- length(CPG)
 
 cpg.in.islands <- countOverlaps(CPG, islands, type = "within")
 sum(cpg.in.islands) # 22
 cat("Proportion of (-) Age-Associated CpGs that fall in islands: ", sum(cpg.in.islands) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, islands, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_islands.bed")
+#grToBed(subsetByOverlaps(CPG, islands, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_islands.bed")
 
 
 cpg.in.shores <- countOverlaps(CPG, shores.clean, type = "within")
 sum(cpg.in.shores) # 188
 cat("Proportion of (-) Age-Associated CpGs that fall in shores: ", sum(cpg.in.shores) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, shores.clean, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_shores.bed")
+#grToBed(subsetByOverlaps(CPG, shores.clean, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_shores.bed")
 
 
 cpg.in.shelves <- countOverlaps(CPG, shelves.clean, type = "within")
 sum(cpg.in.shelves) # 124
 cat("Proportion of (-) Age-Associated CpGs that fall in shelves: ", sum(cpg.in.shelves) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, shelves.clean, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_shelves.bed")
+#grToBed(subsetByOverlaps(CPG, shelves.clean, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_shelves.bed")
 
 
 cpg.in.seas <- countOverlaps(CPG, seas, type = "within")
 sum(cpg.in.seas) # 722
 cat("Proportion of (-) Age-Associated CpGs that fall in seas: ", sum(cpg.in.seas) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, seas, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_seas.bed")
+#grToBed(subsetByOverlaps(CPG, seas, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_seas.bed")
 
 
 neg.density.results <- data.frame("Context" = c("islands", "shores", "shelves", "seas","islands", "shores", "shelves", "seas"), 
-                      "Values" = c(sum(sites.in.islands)/totalCG, sum(sites.in.shores)/totalCG,
-                                   sum(sites.in.shelves)/totalCG, sum(sites.in.seas)/totalCG,
-                                   sum(cpg.in.islands)/totalCpG, sum(cpg.in.shores)/totalCpG, 
-                                   sum(cpg.in.shelves)/totalCpG, sum(cpg.in.seas)/totalCpG),
-                      "type" = c(rep("Background", 4), rep("Age-Associated", 4)))
+                                  "Values" = c(sum(sites.in.islands), sum(sites.in.shores),
+                                               sum(sites.in.shelves), sum(sites.in.seas),
+                                               sum(cpg.in.islands), sum(cpg.in.shores), 
+                                               sum(cpg.in.shelves), sum(cpg.in.seas)),
+                                  "Proportions" = c(sum(sites.in.islands)/totalCG, sum(sites.in.shores)/totalCG,
+                                                    sum(sites.in.shelves)/totalCG, sum(sites.in.seas)/totalCG,
+                                                    sum(cpg.in.islands)/totalCpG, sum(cpg.in.shores)/totalCpG, 
+                                                    sum(cpg.in.shelves)/totalCpG, sum(cpg.in.seas)/totalCpG),
+                                  "type" = c(rep("Background", 4), rep("Age-Associated", 4)))
 
 neg.density.results$Context <- factor(neg.density.results$Context, levels=c("islands","shores","shelves", "seas"))
 
@@ -976,25 +1034,31 @@ cat("Proportion of (-) Age-Associated CpGs that fall in promoters: ", sum(cpg.in
 cpg.in.exons <- countOverlaps(CPG, exons.destranded, type = "within")
 sum(cpg.in.exons) # 46
 cat("Proportion of (-) Age-Associated CpGs that fall in exons: ", sum(cpg.in.exons) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, exons.destranded, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_exons.bed")
+#grToBed(subsetByOverlaps(CPG, exons.destranded, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_exons.bed")
 
 
 cpg.in.introns <- countOverlaps(CPG, introns, type = "within")
 sum(cpg.in.introns) # 393
 cat("Proportion of (-) Age-Associated CpGs that fall in introns: ", sum(cpg.in.introns) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, introns, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_introns.bed")
+#grToBed(subsetByOverlaps(CPG, introns, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_introns.bed")
 
 
 cpg.in.intergenic <- countOverlaps(CPG, intergenic.clean, type = "within")
 sum(cpg.in.intergenic) # 615
 cat("Proportion of (-) Age-Associated CpGs that fall in intergenic space: ", sum(cpg.in.intergenic) / length(CPG), "\n")
-#grToBed(subsetByOverlaps(CPG, intergenic.clean, type = "within"), "C:/Users/sheal/Desktop/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_intergenic.bed")
+#grToBed(subsetByOverlaps(CPG, intergenic.clean, type = "within"), "~/Parrott_Lab/Anole/AnoleAge/Fig1/NEGAgeAssoc_cpg_intergenic.bed")
 
 
 neg.genic.results <- data.frame("Context" = c("promoters", "exons", "introns", "intergenic", "promoters", "exons", "introns", "intergenic"), 
-                      "Values" = c(sum(sites.in.promo)/totalCG, sum(sites.in.exons)/totalCG, sum(sites.in.introns)/totalCG, sum(sites.in.intergenic)/totalCG,
-                                   sum(cpg.in.promo)/totalCpG, sum(cpg.in.exons)/totalCpG, sum(cpg.in.introns)/totalCpG, sum(cpg.in.intergenic)/totalCpG),
-                      "type" = c(rep("Background", 4), rep("Age-Associated", 4)))
+                                "Values" = c(sum(sites.in.promo), sum(sites.in.exons), 
+                                             sum(sites.in.introns), sum(sites.in.intergenic),
+                                             sum(cpg.in.promo), sum(cpg.in.exons), 
+                                             sum(cpg.in.introns), sum(cpg.in.intergenic)),
+                                "Proportions" = c(sum(sites.in.promo)/totalCG, sum(sites.in.exons)/totalCG, 
+                                                  sum(sites.in.introns)/totalCG, sum(sites.in.intergenic)/totalCG,
+                                                  sum(cpg.in.promo)/totalCpG, sum(cpg.in.exons)/totalCpG, 
+                                                  sum(cpg.in.introns)/totalCpG, sum(cpg.in.intergenic)/totalCpG),
+                                "type" = c(rep("Background", 4), rep("Age-Associated", 4)))
 
 neg.genic.results$Context <- factor(neg.genic.results$Context, levels=c("promoters", "exons", "introns", "intergenic"))
 
@@ -1031,7 +1095,7 @@ total.density <- rbind(pos.density.results, neg.density.results)
 total.density$sign[c(1,2,3,4,9,10,11,12)] <- "Background"
 total.density$sign <- factor(total.density$sign, levels = c("- Age-Associated", "Background", "+ Age-Associated"))
 
-h <- ggplot(data = total.density, aes(x = Context, y = Values)) + 
+h <- ggplot(data = total.density, aes(x = Context, y = Proportions)) + 
     geom_bar(aes(fill = sign), stat = "identity", position = "dodge",   color = "black") + 
     scale_fill_manual(values=c("navy", "forestgreen", "firebrick")) +
   ylab("Percentage of Total CpGs") +
@@ -1041,7 +1105,9 @@ h <- ggplot(data = total.density, aes(x = Context, y = Values)) +
           axis.title=element_text(size=12,face="bold"))
 h
 
-ggsave(h, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-WGCNA/images/blueMod_density_combo.png",
+total.density[,c(1,2,5)]
+
+ggsave(h, filename = "~/Parrott_Lab/AnoleAge/WGCNA/images/blueMod_density_combo.svg", device = "svg",
        width = 3, height = 3)
 
 pos.genic.results$sign <- paste0("+ ", pos.genic.results$type)
@@ -1051,7 +1117,7 @@ total.genic <- rbind(pos.genic.results, neg.genic.results)
 total.genic$sign[c(1,2,3,4,9,10,11,12)] <- "Background"
 total.genic$sign <- factor(total.genic$sign, levels = c("- Age-Associated", "Background", "+ Age-Associated"))
 
-i <- ggplot(data = total.genic, aes(x = Context, y = Values)) + 
+i <- ggplot(data = total.genic, aes(x = Context, y = Proportions)) + 
     geom_bar(aes(fill = sign), stat = "identity", position = "dodge",   color = "black") + 
     scale_fill_manual(values=c("navy", "forestgreen", "firebrick")) +
   ylab("Percentage of Total CpGs") +
@@ -1061,6 +1127,26 @@ i <- ggplot(data = total.genic, aes(x = Context, y = Values)) +
           axis.title=element_text(size=12,face="bold"))
 i
 
-ggsave(i, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-WGCNA/images/blueMod_genic_combo.png",
-       width = 3, height = 3)
+i.leg <- ggplot(data = total.genic, aes(x = Context, y = Proportions)) + 
+  geom_bar(aes(fill = sign), stat = "identity", position = "dodge",   color = "black") + 
+  scale_fill_manual(values=c("navy", "forestgreen", "firebrick")) +
+  ylab("Percentage of Total CpGs") +
+  xlab("") +
+  theme(axis.line = element_line(colour = "black"), 
+        axis.text=element_text(size=10),
+        axis.title=element_text(size=12,face="bold"))
+
+leg <- cowplot::get_legend(i.leg)
+
+grid.newpage()
+
+leg.plot <- grid.draw(leg)
+
+ggsave(leg, filename = "~/Parrott_Lab/AnoleAge/WGCNA/images/enrichments_legend.svg", device = "svg",
+       width = 3, height = 2)
+
+total.genic[,c(1,2,5)]
+
+ggsave(i, filename = "~/Parrott_Lab/AnoleAge/WGCNA/images/blueMod_genic_combo.svg", device = "svg",
+       width = 2, height = 1)
 

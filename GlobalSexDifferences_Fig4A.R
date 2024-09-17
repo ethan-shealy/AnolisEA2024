@@ -16,7 +16,7 @@ annotations <- data.frame("ID" = c("S10","S15","S19","S23","S28","S33","S41","S4
                           "ages" = c(36,36,36,36,36,36,48,48,48,48,48,48,18,18,18,18,18,18,1,1,1,1,7,7,7,7,7,7,7,7,7,60,60,60,60,60,60),
                           "sex" = as.factor(c("F","F","F","M","M","F","M","F","M","F","M","F","M","F","F","F","M","M","F","M","F","M","M","F","F","F","F","M","M","M","M","M","M","F","M","F","F")))
 
-age.data <- read.table("C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/data/LogAgeSites_smoothed200.bed",
+age.data <- read.table("~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/data/LogAgeSites_smoothed200.bed",
                        sep = "\t", header = FALSE)
 
 
@@ -50,7 +50,7 @@ b <- ggplot(cor.sex.long, aes(x = r, fill = Sex)) +
         geom_vline(aes(xintercept = mean(m.cor$r, na.rm = TRUE)), color = "dodgerblue", linetype = "dashed", linewidth = 1.1)
 b
 
-ggsave(b, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig5-SexDiff/images/global_sexdiff_hist.png",
+ggsave(b, filename = "~/Parrott_Lab/AnoleAge/Fig5-SexDiff/images/global_sexdiff_hist.svg", device = "svg",
        width = 4.5, height = 4)
 
 mean(f.cor$r, na.rm = TRUE); mean(m.cor$r, na.rm = TRUE)
@@ -114,6 +114,6 @@ d <- ggplot(cor.admc.sex.long, aes(x = r, fill = Sex)) +
         geom_vline(aes(xintercept = mean(m.cor$r, na.rm = TRUE)), color = "dodgerblue", linetype = "dashed", linewidth = 1.1)
 d
 
-ggsave(d, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig5-SexDiff/images/aDMC_sexdiff_hist.png",
+ggsave(d, filename = "~/Parrott_Lab/AnoleAge/Fig5-SexDiff/images/aDMC_sexdiff_hist.svg", device = "svg",
        width = 4.5, height = 4)
 

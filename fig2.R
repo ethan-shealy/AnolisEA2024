@@ -11,7 +11,7 @@ theme_set(theme_bw() +
 
 ## First, read in significant sex DMR sites and overlap to get methylation data for each individual here
 
-sex.data <- read.table("C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/data/SexSites_smoothed200.bed",
+sex.data <- read.table("~/Parrott_Lab/AnoleAge/Fig2-DSSsex/data/SexSites_smoothed200.bed",
                        sep = "\t", header = FALSE)
 
 sex.sites <- GRanges(seqnames = sex.data$V1,
@@ -77,7 +77,7 @@ a <- ggplot(table.sorted, aes(x = siteDensity, y = chrName)) + geom_col(fill = "
     theme(axis.title = element_text(size = 16), strip.background = element_blank())
 a
 
-ggsave(a, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/SexSites_byMBp.png",
+ggsave(a, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/SexSites_byMBp.svg", device = "svg",
        width = 12, height = 4)
 
 ## Now pull out only DMCs which are found on the X chromosome
@@ -126,7 +126,7 @@ d <- ggplot(data = f_X.sites_total, aes(x = sex, y = means, fill = sex)) +
           legend.text = element_text(size = 16))
 d
 
-ggsave(d, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/xChrom_sexDMC_FemHyperMeth.png",
+ggsave(d, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/xChrom_sexDMC_FemHyperMeth.svg", device = "svg",
        width = 4, height = 4)
 
 
@@ -151,13 +151,13 @@ d2 <- ggplot(data = m_X.sites_total, aes(x = sex, y = means, fill = sex)) +
 
 d2
 
-ggsave(d2, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/xChrom_sexDMC_MaleHyperMeth.png",
+ggsave(d2, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/xChrom_sexDMC_MaleHyperMeth.svg", device = "svg",
        width = 4, height = 4)
 
 d3 <- ggarrange(d, d2, nrow = 1, common.legend = TRUE)
 d3
 
-ggsave(d3, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/xChrom_sexDMC_COMBO.png",
+ggsave(d3, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/xChrom_sexDMC_COMBO.svg", device = "svg",
        width = 8, height = 4.25)
 
 ### Get pseudo-effect sizes from the average %methylation differences of our two sexes:
@@ -174,7 +174,7 @@ c <- ggarrange(m_X.sites_diff.hist, m_X.sites_diff.box + rremove("x.text"), ncol
           widths = c(1.5,.5))
 c
 
-ggsave(c, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/xChrom_Mhypermeth_methDiff.png",
+ggsave(c, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/xChrom_Mhypermeth_methDiff.svg", device = "svg",
        width = 5, height = 4)
 
 f_X.sites_diff <- na.omit(data.frame("maleAvg" = f_X.m_avg$means, "femAvg" = f_X.f_avg$means, "diff" = ( f_X.f_avg$means - f_X.m_avg$means )))
@@ -190,13 +190,13 @@ c2 <- ggarrange(f_X.sites_diff.hist, f_X.sites_diff.box + rremove("x.text"), nco
           widths = c(1.5,.5))
 c2
 
-ggsave(c2, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/xChrom_Fhypermeth_methDiff.png",
+ggsave(c2, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/xChrom_Fhypermeth_methDiff.svg", device = "svg",
        width = 5, height = 4)
 
 c3 <- ggarrange(c, c2, nrow = 2)
 c3
 
-ggsave(c3, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/xChrom_COMBO_methDiff.png",
+ggsave(c3, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/xChrom_COMBO_methDiff.svg", device = "svg",
        width = 5, height = 4)
 
 mean(f_X.sites_diff$diff)
@@ -244,7 +244,7 @@ b <- ggplot(data = fAuto.sites_total, aes(x = sex, y = means, fill = sex)) + geo
           legend.text = element_text(size = 16))
 b
 
-ggsave(b, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/autosom_sexDMC_FemHyperMeth.png",
+ggsave(b, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/autosom_sexDMC_FemHyperMeth.svg", device = "svg",
        width = 5, height = 4)
 
 
@@ -269,13 +269,13 @@ b2 <- ggplot(data = mAuto.sites_total, aes(x = sex, y = means, fill = sex)) +
           legend.text = element_text(size = 16))
 b2
 
-ggsave(b2, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/autosom_sexDMC_MaleHyperMeth.png",
+ggsave(b2, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/autosom_sexDMC_MaleHyperMeth.svg", device = "svg",
        width = 5, height = 4)
 
 b3 <- ggarrange(b, b2, nrow = 1, common.legend = TRUE)
 b3
 
-ggsave(b3, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/autosom_sexDMC_COMBO.png",
+ggsave(b3, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/autosom_sexDMC_COMBO.svg", device = "svg",
        width = 8, height = 4.25)
 
 
@@ -293,7 +293,7 @@ e <- ggarrange(mAuto.sites_diff.hist, mAuto.sites_diff.box + rremove("x.text"), 
           widths = c(1.5,.5))
 e
 
-ggsave(e, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/Autosom_Mhypermeth_methDiff.png",
+ggsave(e, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/Autosom_Mhypermeth_methDiff.svg", device = "svg",
        width = 5, height = 4)
 
 fAuto.sites_diff <- na.omit(data.frame("maleAvg" = fAuto.m_avg$means, "femAvg" = fAuto.f_avg$means, "diff" = ( fAuto.f_avg$means - fAuto.m_avg$means )))
@@ -309,13 +309,13 @@ e2 <- ggarrange(fAuto.sites_diff.hist, fAuto.sites_diff.box + rremove("x.text"),
           widths = c(1.5,.5))
 d2
 
-ggsave(e2, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/Autosom_Fhypermeth_methDiff.png",
+ggsave(e2, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/Autosom_Fhypermeth_methDiff.svg", device = "svg",
        width = 5, height = 4)
 
 e3 <- ggarrange(e, e2, nrow = 2)
 e3
 
-ggsave(d3, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/autosom_COMBO_methDiff.png",
+ggsave(d3, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/autosom_COMBO_methDiff.svg", device = "svg",
        width = 5, height = 4)
 
 ## Now do a similar analysis, but only looking at the cluster of DMCs / DMRs located on the ~550kb region of X chromosome
@@ -326,7 +326,7 @@ x.site <- GRanges(seqnames = "scaffold_7", ranges = IRanges(start = 62400000, en
 
 ## Plot chromoplot of this site's location
 library(chromoMap)
-chr_file <-  read.table("C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/data/AnoSag_chrList.txt")
+chr_file <-  read.table("~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/data/AnoSag_chrList.txt")
 annot_file <- data.frame("V1" = "FHM", "V2" = "chrX", "V3" = 62340362, "V4" = 62891389)
 
 mapobj <- chromoMap(list(chr_file[7,]), list(annot_file),
@@ -361,7 +361,7 @@ f <- ggplot(data = xSite.total, aes(x = sex, y = means, fill = sex)) +
           legend.text = element_text(size = 16))
 f
 
-ggsave(f, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/FHRX_sexDMC.png", 
+ggsave(f, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/FHRX_sexDMC.svg", device = "svg", 
        height = 4, width = 5)
 
 fXsite.sites_diff <- na.omit(data.frame("maleAvg" = m.avgs.Xsite, "femAvg" = f.avgs.Xsite, "diff" = ( f.avgs.Xsite - m.avgs.Xsite )))
@@ -408,19 +408,19 @@ g <- ggplot(New, aes(x = Bins, y = WindowAvgs, fill = WindowAvgs)) +
     
 g
 
-ggsave(g, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/FHRX_rawPlot_columns.png",
+ggsave(g, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/FHRX_rawPlot_columns.svg", device = "svg",
        width = 6, height = 2)
 
 ## Now plot out the genes in this region
 
-genes <- import.gff("C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/CDS.gtf")
-CGI <- import.bed("C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/CGIslands.bed")
+genes <- import.gff("~/Parrott_Lab/Anole_Data/AnoSag2.1/CDS.gtf")
+CGI <- import.bed("~/Parrott_Lab/Anole_Data/AnoSag2.1/CGIslands.bed")
 
 roi.genes <- subsetByOverlaps(genes, x.site.larger, type = "within")
 roi.cgi <- subsetByOverlaps(CGI, x.site.larger, type = "within")
 
-export.gff3(roi.genes, con = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/data/FHRX.gff")
-export.bed(roi.cgi, con = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/data/FHRX_CGI.bed")
+export.gff3(roi.genes, con = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/data/FHRX.gff")
+export.bed(roi.cgi, con = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/data/FHRX_CGI.bed")
 
 library(gggenomes)
 
@@ -431,7 +431,7 @@ s0 <- tibble(
 )
 
 
-g0 <- read_feats("C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/data/FHRX.gff")
+g0 <- read_feats("~/Parrott_Lab/AnoleAge/Fig2-DSSsex/data/FHRX.gff")
 
 g1 <- tibble(
   seq_id = rep("FHRX", 5),
@@ -440,7 +440,7 @@ g1 <- tibble(
   label = g0$gene_name
 )
 
-f0 <- read_feats("C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/data/FHRX_CGI.bed")
+f0 <- read_feats("~/Parrott_Lab/AnoleAge/Fig2-DSSsex/data/FHRX_CGI.bed")
 
 f1 <- tibble(
   seq_id = rep("FHRX", length(f0$file_id)),
@@ -448,7 +448,7 @@ f1 <- tibble(
   end =  f0$end - start(x.site.larger)
 )
 
-f2 <- read_feats("C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/data/Sex_DMRs_smoothed200.bed")
+f2 <- read_feats("~/Parrott_Lab/AnoleAge/Fig2-DSSsex/data/Sex_DMRs_smoothed200.bed")
 
 f3 <- tibble(
   seq_id = rep("FHRX", length(f2$file_id)),
@@ -464,7 +464,7 @@ g.sub <- gggenomes(seqs = s0, genes = g1[-1,], feats = f3) +
 
 g.sub
 
-ggsave(g.sub, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/images/FHRX_genes.png",
+ggsave(g.sub, filename = "~/Parrott_Lab/AnoleAge/Fig2-DSSsex/images/FHRX_genes.svg", device = "svg",
        width = 5, height = 1)
 
 

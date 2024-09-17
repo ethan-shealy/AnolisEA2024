@@ -22,7 +22,7 @@ meth.gr <- GRanges(seqnames = meth_file$chr,
 
 ## read in age DMC coordinates
 
-ageSites <- read.table("C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/data/LogAgeSites_smoothed200.bed", header = FALSE)
+ageSites <- read.table("~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/data/LogAgeSites_smoothed200.bed", header = FALSE)
 
 ageSites <- ageSites[-4671,] ## For some reason this single site isn't represented in full dataset - remove it
 
@@ -116,7 +116,7 @@ a <- ggplot(data = modelSlopes.clean.long, aes(x = name, y = slope, color = name
        #scale_x_discrete(labels = c("Female", "Male"))
 a
 
-ggsave(a, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig5-SexDiff/images/LogAgeSites_SexRates_ByDir.png",
+ggsave(a, filename = "~/Parrott_Lab/AnoleAge/Fig5-SexDiff/images/LogAgeSites_SexRates_ByDir.svg", device = "svg",
        width = 4, height = 5)
 
 # t-tests comparing rates seperately at sites which increase and decrease
@@ -162,7 +162,7 @@ b2 <- ggplot(up.long, aes(x = ages, y = Meth, color = sex)) +
 bFull <- ggarrange(b1, b2, ncol = 1, nrow = 2)
 bFull
 
-ggsave(bFull, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig5-SexDiff/images/LogAgeSites_MethvsAge.png",
+ggsave(bFull, filename = "~/Parrott_Lab/AnoleAge/Fig5-SexDiff/images/LogAgeSites_MethvsAge.svg", device = "svg",
        width = 6, height = 8)
 
 ## Looks like counterintuitive pattern could be driven by more "robust" initial methylation in females - look at early life differences
@@ -188,9 +188,11 @@ youngAvgs.long <- tidyr::pivot_longer(youngAvgs, cols = c(2,3), names_to = "Sex"
 
 mergedSites <- merge(modelSlopes.clean, youngAvgs.clean, by = "Site")
 
+mergedSites$chr <- stringr::str_split_fixed(mergedSites$Site, "\\.", 2)[,1]
+
 mergedSites$chr <- as.numeric(stringr::str_remove_all(mergedSites$chr, "scaffold_"))
 
-mergedSites.long <- tidyr::pivot_longer(mergedSites, cols = c(9,10), names_to = "Sex", values_to = "Avgs")
+mergedSites.long <- tidyr::pivot_longer(mergedSites, cols = c(7,8), names_to = "Sex", values_to = "Avgs")
 
 # plot early life averages
 
@@ -200,7 +202,7 @@ b <- ggplot(mergedSites.long, aes(x = Sex, y = Avgs, color = Sex)) + geom_boxplo
     scale_x_discrete(labels = c("Female", "Male"))
 b
 
-ggsave(b, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig5-SexDiff/images/LogAgeSites_EarlyLifeAvgs_ByDir.png",
+ggsave(b, filename = "~/Parrott_Lab/AnoleAge/Fig5-SexDiff/images/LogAgeSites_EarlyLifeAvgs_ByDir.svg", device = "svg",
        width = 4, height = 5)
 
 ## t-tests of early life averages
@@ -217,7 +219,7 @@ t.test(mergedSites$YoungFemaleAvg[which(mergedSites$Dir == "Decreasing")],
 
 ## Now repeat for blue module sites --------------------------------------------------------------------------------------------------------
 
-bluemod.mat <- read.table("C:/Users/sheal/Desktop/AnoleAge/WGCNA/data/blue.mat")
+bluemod.mat <- read.table("~/Parrott_Lab/AnoleAge/WGCNA/data/blue.mat")
 
 annotations <- data.frame("ID" = c("S10","S15","S19","S23","S28","S33","S41","S46","S49","S51","S53","S61","S62","S64","S66","S67",
                                    "S70","S76","S84","S85","S95","S96", "S107","S110","S111","S116","S117","S120","S122","S125","S126",
@@ -276,7 +278,7 @@ d <- ggplot(data = modelSlopes.wgcna.long, aes(x = name, y = slope, color = name
        scale_x_discrete(labels = c("Female", "Male"))
 d 
 
-ggsave(d, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig5-SexDiff/images/WGCNA_SexRates_ByDir.png",
+ggsave(d, filename = "~/Parrott_Lab/AnoleAge/Fig5-SexDiff/images/WGCNA_SexRates_ByDir.svg", device = "svg",
        width = 4, height = 5)
 
 ## Now look at differences in methylation at young ages in these individuals
@@ -320,7 +322,7 @@ e <- ggplot(mergedSites.wgcna.long, aes(x = Sex, y = Avgs, color = Sex)) + geom_
     ylab("Avg Methylation") + labs(title = "Blue Module in Early life (1-7mo)")
 e
 
-ggsave(e, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig5-SexDiff/images/WGCNA_EarlyLifeAvgs_ByDir.png",
+ggsave(e, filename = "~/Parrott_Lab/AnoleAge/Fig5-SexDiff/images/WGCNA_EarlyLifeAvgs_ByDir.svg", device = "svg",
        width = 4, height = 5)
 
 mergedSites.wgcna.long2 <- tidyr::pivot_longer(mergedSites.wgcna, cols = c(2,3), names_to = "Sex", values_to = "Rate")
@@ -367,5 +369,5 @@ b2 <- ggplot(up.long, aes(x = ages, y = Meth, color = sex)) +
 bFull <- ggarrange(b1, b2, ncol = 1, nrow = 2)
 bFull
 
-ggsave(bFull, filename = "C:/Users/sheal/Desktop/AnoleAge/Fig5-SexDiff/images/BlueModSites_MethvsAge.png",
+ggsave(bFull, filename = "~/Parrott_Lab/AnoleAge/Fig5-SexDiff/images/BlueModSites_MethvsAge.svg", device = "svg",
        width = 6, height = 8)

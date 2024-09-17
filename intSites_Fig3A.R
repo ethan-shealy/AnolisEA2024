@@ -10,7 +10,7 @@ theme_set(theme_bw() +
 
 ##### Plot out all interaction sites
 
-int.data <- read.table("C:/Users/sheal/Desktop/AnoleAge/Misc/DSSdata/LogInteractSites_smoothed200.bed",
+int.data <- read.table("~/Parrott_Lab/AnoleAge/Misc/DSSdata/LogInteractSites_smoothed200.bed",
                        sep = "\t", header = FALSE)
 
 annotations <- data.frame("ID" = c("S10","S15","S19","S23","S28","S33","S41","S46","S49","S51","S53","S61","S62","S64","S66","S67",
@@ -54,5 +54,5 @@ a <- ggplot(annot_long, aes(x = ages, y = Methylation, color = sex)) +
     theme(legend.text = element_text(size = 12), legend.title = element_text(size = 14, face = "bold"))
 a
 
-ggsave(a, filename = "C:/Users/sheal/Desktop/AnoleAge/Misc/chr3/IntSites_plotted.png",
+ggsave(a, filename = "~/Parrott_Lab/AnoleAge/Misc/chr3/IntSites_plotted.svg", device = "svg",
        width = 7, height = 4)

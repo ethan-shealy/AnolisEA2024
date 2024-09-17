@@ -141,7 +141,7 @@ theme_set(theme_bw() +
           axis.title=element_text(size=16,face="bold")))
 
 
-setwd("C:/Users/sheal/Desktop/AnoleAge/WGCNA")
+setwd("~/Parrott_Lab/AnoleAge/WGCNA")
 # Load the expression and trait data saved in the first part
 lnames = load(file = "data/VarData_anoleMeth-dataInput.RData");
 #The variable lnames contains the names of loaded variables.
@@ -196,7 +196,7 @@ e <- ggplot(data = ageSig.df, aes(x = rownames(ageSig.df), y = -log10(ages.pAdj)
     labs(size = "Abs. r") + xlab("")
 e
 
-ggsave(e, filename = "C:/Users/sheal/Desktop/AnoleAge/WGCNA/images/ModuleAgeSig.png",
+ggsave(e, filename = "~/Parrott_Lab/AnoleAge/WGCNA/images/ModuleAgeSig.svg", device = "svg",
        width = 8, height = 4)
 
 
@@ -212,7 +212,7 @@ e.inlay <- ggplot(data = annot_MEs, aes(x = ages, y = MEblue)) +
 
 e.inlay
 
-ggsave(e.inlay, filename = "C:/Users/sheal/Desktop/AnoleAge/WGCNA/images/blueMod_eigenVSage.png",
+ggsave(e.inlay, filename = "~/Parrott_Lab/AnoleAge/WGCNA/images/blueMod_eigenVSage.svg", device = "svg",
        width = 2, height = 2)
 
 logLM <- lm(data = annot_MEs, formula = MEblue ~ log(ages))

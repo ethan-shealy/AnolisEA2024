@@ -10,11 +10,11 @@ theme_set(theme_bw() +
 
 ## Import CG counts per chromosome - generated using fastaRegexFinder.py from bioinformatics-cafe on github
 
-table.cg.sorted <- read.table("C:/Users/sheal/Desktop/Parrott_Lab/Anole_Data/AnoSag2.1/CG_perChr.txt")
+table.cg.sorted <- read.table("~/Parrott_Lab/Anole_Data/AnoSag2.1/CG_perChr.txt")
 
 # read in sex DMC data
 
-sex.data <- read.table("C:/Users/sheal/Desktop/AnoleAge/Fig2-DSSsex/data/SexSites_smoothed200.bed",
+sex.data <- read.table("~/Parrott_Lab/AnoleAge/Fig2-DSSsex/data/SexSites_smoothed200.bed",
                        sep = "\t", header = FALSE)
 
 # tabulate and test enrichment of sex-related sites on chr3
@@ -33,7 +33,7 @@ sex.sites <- GRanges(seqnames = sex.data$V1,
 
 ## Now perform the same test on age-related sites
 
-age.data <- read.table("C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/data/LogAgeSites_smoothed200.bed",
+age.data <- read.table("~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/data/LogAgeSites_smoothed200.bed",
                        sep = "\t", header = FALSE)
 
 age.tab <- as.data.frame(table(age.data$V1))
@@ -64,11 +64,11 @@ annot.df <- data.frame("name" = paste0(seqnames(overlaps), ".", start(overlaps))
 
 annot.df$chr <- stringr::str_replace_all(annot.df$chr, "scaffold_", "chr")
 
-write.table(annot.df, "C:/Users/sheal/Desktop/AnoleAge/Misc/chr3/overlapSites_annot.txt", 
+write.table(annot.df, "~/Parrott_Lab/AnoleAge/Misc/chr3/overlapSites_annot.txt", 
             col.names = FALSE, row.names = FALSE, sep = "\t", quote = FALSE)
 
-annot <- "C:/Users/sheal/Desktop/AnoleAge/Misc/chr3/overlapSites_annot.txt"
-chr_file <- "C:/Users/sheal/Desktop/AnoleAge/Fig1.1-DSSLogAge/data/AnoSag_chrList.txt"
+annot <- "~/Parrott_Lab/AnoleAge/Misc/chr3/overlapSites_annot.txt"
+chr_file <- "~/Parrott_Lab/AnoleAge/Fig1.1-DSSLogAge/data/AnoSag_chrList.txt"
 
 c <- chromoMap(chr_file, annot, ch_gap = 2, chr_color = rep("grey", 15), anno_col = "blue")
 
@@ -97,7 +97,7 @@ b <- ggVennDiagram(x, label_color = "black", label_size = 4, set_size = 5) + sca
     scale_fill_steps(low = "skyblue", high = "navy") + theme(legend.position = "none")
 b
 
-ggsave(b, filename = "C:/Users/sheal/Desktop/AnoleAge/Misc/chr3/Sex_Age_venn.png",
+ggsave(b, filename = "~/Parrott_Lab/AnoleAge/Misc/chr3/Sex_Age_venn.svg", device = "svg",
        width = 3, height = 2)
 
 ## aggregate and plot out trajectory of chr3-specific overlap sites
@@ -144,15 +144,22 @@ siteDirs <- data.frame("site" = paste0("X", c(1:47)),
 
 region.long.dir <- merge(region.long, siteDirs, by.x = "Site", by.y = "site", sort = FALSE, all.x = TRUE)
 
+library(tidyverse)
 
-d <- ggplot(region.long.dir, aes(x = ages, y = Meth, color = sex)) + 
-    geom_jitter(color = "black", alpha = 0.3, height = 1, width = 1) + facet_grid(cols = vars(sex), rows = vars(dir)) +
-    geom_smooth(method = "lm", formula = y ~ log(x)) +
+region.long.dir.summarized <- region.long.dir %>%
+                                group_by(ages, sex, dir) %>%
+                                  summarise("AvgMeth" = mean(Meth))
+
+d <- ggplot(region.long.dir.summarized, aes(x = ages, y = AvgMeth, color = sex)) + 
+    geom_smooth(method = "lm", formula = y ~ log(x), alpha = 0.2) +
+  geom_point(color = "black") + facet_grid(cols = vars(sex), rows = vars(dir)) +
     theme(legend.title = element_text(size = 16, face = "bold"), legend.text = element_text(size = 14),
-          legend.position = "top", strip.text = element_text(size = 12)) + labs(x = "Age (months)", color = "Sex")
+          legend.position = "top", strip.text = element_text(size = 12)) + labs(x = "Age (months)", color = "Sex") +
+  coord_cartesian(ylim = c(0, 100))
+  
 d
 
-ggsave(d, filename = "C:/Users/sheal/Desktop/AnoleAge/Misc/chr3/chr3_regionMeth_byDir.png",
+ggsave(d, filename = "~/Parrott_Lab/AnoleAge/Misc/chr3/chr3_regionMeth_byDir.svg", device = "svg",
        width = 5, height = 5)
 
 
